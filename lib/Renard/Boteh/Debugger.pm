@@ -1,3 +1,4 @@
+use Renard::Incunabula::Common::Setup;
 package Renard::Boteh::Debugger;
 # ABSTRACT: A debugger for Boteh motifs
 
