@@ -13,14 +13,14 @@ use Glib qw(TRUE FALSE);
 
 =attr canvas
 
-A L<Gtk3::DrawingArea>.
+A L<Gtk3::Layout>.
 
 =cut
 lazy canvas => method() {
-	my $canvas = Gtk3::DrawingArea->new();
+	my $canvas = Gtk3::Layout->new();
 
 	$canvas->signal_connect( draw => callback(
-			(InstanceOf['Gtk3::DrawingArea']) $widget,
+			(InstanceOf['Gtk3::Layout']) $widget,
 			(InstanceOf['Cairo::Context']) $cr) {
 		$self->on_draw_page_cb( $cr );
 
@@ -32,9 +32,8 @@ lazy canvas => method() {
 		\&on_motion_notify_event_cb, $self );
 	$canvas->add_events('scroll-mask');
 
-
 	$canvas;
-}, isa => InstanceOf['Gtk3::DrawingArea'];
+}, isa => InstanceOf['Gtk3::Layout'];
 
 =attr scrolled_window
 
