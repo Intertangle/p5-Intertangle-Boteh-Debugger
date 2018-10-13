@@ -2,10 +2,11 @@ use Renard::Incunabula::Common::Setup;
 package Renard::Boteh::Debugger::GUI::Component::RenderArea;
 # ABSTRACT: A render area
 
-use Moo;
+use Mu;
 use Glib::Object::Subclass
 	'Gtk3::Bin';
 
+use Object::Util;
 use Cairo;
 use Renard::Incunabula::Common::Types qw(InstanceOf);
 use Glib qw(TRUE FALSE);
@@ -15,20 +16,40 @@ use Glib qw(TRUE FALSE);
 A L<Gtk3::DrawingArea>.
 
 =cut
-has drawing_area => (
-	is => 'rw',
-	isa => InstanceOf['Gtk3::DrawingArea'],
-);
+lazy drawing_area => method() {
+	my $drawing_area = Gtk3::DrawingArea->new();
+
+	$drawing_area->signal_connect( draw => callback(
+			(InstanceOf['Gtk3::DrawingArea']) $widget,
+			(InstanceOf['Cairo::Context']) $cr) {
+		$self->on_draw_page_cb( $cr );
+
+		return TRUE;
+	}, $self);
+
+	$drawing_area->add_events([ qw/button-press-mask pointer-motion-mask/ ]);
+	$drawing_area->signal_connect( 'motion-notify-event' =>
+		\&on_motion_notify_event_cb, $self );
+	$drawing_area->add_events('scroll-mask');
+
+
+	$drawing_area;
+}, isa => InstanceOf['Gtk3::DrawingArea'];
 
 =attr scrolled_window
 
 A L<Gtk3::ScrolledWindow>.
 
 =cut
-has scrolled_window => (
-	is => 'rw',
-	isa => InstanceOf['Gtk3::ScrolledWindow'],
-);
+lazy scrolled_window => method() {
+	my $scrolled_window = Gtk3::ScrolledWindow->new();
+
+	$scrolled_window->set_hexpand(TRUE);
+	$scrolled_window->set_vexpand(TRUE);
+	$scrolled_window->set_policy( 'automatic', 'automatic');
+
+	$scrolled_window;
+}, isa => InstanceOf['Gtk3::ScrolledWindow'];
 
 =attr cairo_surface
 
@@ -46,28 +67,11 @@ Sets up the render area component.
 
 =cut
 method BUILD(@) {
-	my $drawing_area = Gtk3::DrawingArea->new();
-	$self->drawing_area( $drawing_area );
-	$drawing_area->signal_connect( draw => callback(
-			(InstanceOf['Gtk3::DrawingArea']) $widget,
-			(InstanceOf['Cairo::Context']) $cr) {
-		$self->on_draw_page_cb( $cr );
-
-		return TRUE;
-	}, $self);
-
-	$drawing_area->add_events([ qw/button-press-mask pointer-motion-mask/ ]);
-	$drawing_area->signal_connect( 'motion-notify-event' =>
-		\&on_motion_notify_event_cb, $self );
-	$drawing_area->add_events('scroll-mask');
-
-	my $scrolled_window = Gtk3::ScrolledWindow->new();
-	$scrolled_window->set_hexpand(TRUE);
-	$scrolled_window->set_vexpand(TRUE);
-
-	$scrolled_window->add($drawing_area);
-	$scrolled_window->set_policy( 'automatic', 'automatic');
-	$self->scrolled_window($scrolled_window);
+	$self->add(
+		$self->scrolled_window->$_tap(
+			add => $self->drawing_area
+		)
+	);
 
 	my @adjustments = (
 		$self->scrolled_window->get_hadjustment,
@@ -80,8 +84,6 @@ method BUILD(@) {
 		#$adjustment->signal_connect( 'value-changed' => $callback );
 		#$adjustment->signal_connect( 'changed' => $callback );
 	#}
-
-	$self->add( $scrolled_window );
 }
 
 method _trigger_rendering() {
