@@ -11,15 +11,15 @@ use Cairo;
 use Renard::Incunabula::Common::Types qw(InstanceOf);
 use Glib qw(TRUE FALSE);
 
-=attr drawing_area
+=attr canvas
 
 A L<Gtk3::DrawingArea>.
 
 =cut
-lazy drawing_area => method() {
-	my $drawing_area = Gtk3::DrawingArea->new();
+lazy canvas => method() {
+	my $canvas = Gtk3::DrawingArea->new();
 
-	$drawing_area->signal_connect( draw => callback(
+	$canvas->signal_connect( draw => callback(
 			(InstanceOf['Gtk3::DrawingArea']) $widget,
 			(InstanceOf['Cairo::Context']) $cr) {
 		$self->on_draw_page_cb( $cr );
@@ -27,13 +27,13 @@ lazy drawing_area => method() {
 		return TRUE;
 	}, $self);
 
-	$drawing_area->add_events([ qw/button-press-mask pointer-motion-mask/ ]);
-	$drawing_area->signal_connect( 'motion-notify-event' =>
+	$canvas->add_events([ qw/button-press-mask pointer-motion-mask/ ]);
+	$canvas->signal_connect( 'motion-notify-event' =>
 		\&on_motion_notify_event_cb, $self );
-	$drawing_area->add_events('scroll-mask');
+	$canvas->add_events('scroll-mask');
 
 
-	$drawing_area;
+	$canvas;
 }, isa => InstanceOf['Gtk3::DrawingArea'];
 
 =attr scrolled_window
@@ -69,7 +69,7 @@ Sets up the render area component.
 method BUILD(@) {
 	$self->add(
 		$self->scrolled_window->$_tap(
-			add => $self->drawing_area
+			add => $self->canvas
 		)
 	);
 
@@ -107,7 +107,7 @@ method _trigger_rendering() {
 
 	$self->_walk_cairo_render( $render_tree, $cr );
 
-	$self->drawing_area->set_size_request( $sz->width, $sz->height );
+	$self->canvas->set_size_request( $sz->width, $sz->height );
 }
 
 =callback on_draw_page_cb
