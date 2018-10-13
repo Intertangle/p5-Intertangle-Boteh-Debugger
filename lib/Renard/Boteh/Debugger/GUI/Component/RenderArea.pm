@@ -30,7 +30,6 @@ lazy canvas => method() {
 	$canvas->add_events([ qw/button-press-mask pointer-motion-mask/ ]);
 	$canvas->signal_connect( 'motion-notify-event' =>
 		\&on_motion_notify_event_cb, $self );
-	$canvas->add_events('scroll-mask');
 
 	$canvas;
 }, isa => InstanceOf['Gtk3::Layout'];
@@ -89,24 +88,88 @@ method _trigger_rendering() {
 	my $render_tree = $self->rendering->render_tree;
 
 	my $sz = $render_tree->attributes->{bounds}->size;
-	my $surface = Cairo::ImageSurface->create('argb32', $sz->width, $sz->height);
+
+	$self->canvas->set_size( $sz->width, $sz->height );
+
+	$self->canvas->queue_draw;
+}
+
+method render_cairo() {
+	my $render_tree = $self->rendering->render_tree;
+	my $sz = $render_tree->attributes->{bounds}->size;
+
+	my $h = $self->scrolled_window->get_hadjustment;
+	my $v = $self->scrolled_window->get_vadjustment;
+
+	my $bounds = Renard::Yarn::Graphene::Rect->new(
+		origin => Renard::Yarn::Graphene::Point->new(
+			x => $h->get_value,
+			y => $v->get_value,
+		),
+		size => Renard::Yarn::Graphene::Size->new(
+			width => $h->get_page_size,
+			height => $v->get_page_size,
+		),
+	);
+
+	my $surface = Cairo::ImageSurface->create(
+		'argb32',
+		$bounds->size->width, $bounds->size->height,
+		#$sz->width, $sz->height,
+	);
+
 	$self->cairo_surface( $surface );
 
-	my $cr = Cairo::Context->create( $surface );
+	use DDP; p $bounds;#DEBUG
 
-	method _walk_cairo_render( $node, $cr ) {
+	my $cr = Cairo::Context->create( $self->cairo_surface );
+
+	use Renard::Taffeta::Transform::Affine2D::Translation;
+
+	my $render_state =
+		Renard::Jacquard::Render::State->new(
+			coordinate_system_transform =>
+				Renard::Taffeta::Transform::Affine2D::Translation->new(
+					translate => [ - $bounds->origin->x, - $bounds->origin->y ],
+				)
+		);
+
+	$cr->save;
+
+	method _walk_cairo_render( $node, $cr, $bounds, $render_state ) {
 		my @daughters = $node->daughters;
-		if( exists $node->attributes->{render} ) {
-			my $el = $node->attributes->{render}->render_cairo( $cr );
+
+		my $renderable = exists $node->attributes->{renderable};
+		my ($in_bounds, $res) = $bounds->intersection($node->attributes->{bounds});
+		if( $renderable && $in_bounds ) {
+			#use DDP; p $node->attributes->{scene_graph}->content->page_number;
+
+			my $state = $node->attributes->{state}->compose( $render_state );
+			#my $state = $node->attributes->{state};
+
+			my $el = $node->attributes->{scene_graph}->content->as_taffeta(
+				state => $state,
+			)->render_cairo( $cr );
+			#my $el = $node->attributes->{render}->render_cairo( $cr );
 		}
 		for my $daughter (@daughters) {
-			$self->_walk_cairo_render( $daughter, $cr );
+			$self->_walk_cairo_render(
+				$daughter,
+				$cr,
+				$bounds,
+				$render_state,
+			);
 		}
 	};
 
-	$self->_walk_cairo_render( $render_tree, $cr );
+	$self->_walk_cairo_render(
+		$render_tree,
+		$cr,
+		$bounds,
+		$render_state,
+	);
 
-	$self->canvas->set_size_request( $sz->width, $sz->height );
+	$cr->restore;
 }
 
 =callback on_draw_page_cb
@@ -115,11 +178,13 @@ Callback for the C<draw> signal on the drawing area.
 
 =cut
 method on_draw_page_cb($cr) {
-	return unless $self->cairo_surface;
+	#return unless $self->cairo_surface;
 
+	$self->render_cairo;
 	$cr->set_source_surface($self->cairo_surface,
-		0,
-		0);
+		0, 0,
+		#$self->scrolled_window->get_hadjustment->get_value, $self->scrolled_window->get_vadjustment->get_value,
+	);
 
 	$cr->paint;
 }
