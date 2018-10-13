@@ -16,7 +16,7 @@ die "Need to pass in class to instantiate" unless $class;
 
 load $class;
 
-my ($root, $top) = $class->new->tree;
+my $root = $class->new->tree;
 my $gui = Renard::Boteh::Debugger::GUI->new;
 $gui->main_window->load_tree( $root );
 $gui->run;
