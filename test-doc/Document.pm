@@ -8,6 +8,8 @@ use Renard::Incunabula::Format::PDF::Devel::TestHelper;
 use POSIX qw(ceil);
 
 use aliased 'Renard::Jacquard::Actor';
+use aliased 'Renard::Jacquard::Actor::Taffeta::Group';
+use aliased 'Renard::Jacquard::Actor::Taffeta::Graphics';
 use aliased 'Renard::Jacquard::Layout::Fixed';
 use aliased 'Renard::Jacquard::Layout::All';
 use aliased 'Renard::Jacquard::Layout::Affine2D';
@@ -76,7 +78,7 @@ lazy document => method() {
 };
 
 lazy tree => method() {
-	my $top = Actor->new(
+	my $top = Group->new(
 		layout => Affine2D->new( transform =>
 			Renard::Taffeta::Transform::Affine2D::Scaling
 				->new(
@@ -92,7 +94,7 @@ lazy tree => method() {
 	#$last_page = 10;
 	my $number_of_columns = 2;
 
-	my $root =  Actor->new(
+	my $root =  Group->new(
 		layout => AutofillGrid->new(
 			rows => ceil($last_page/$number_of_columns),
 			intergrid_space => 10,
@@ -108,7 +110,7 @@ lazy tree => method() {
 };
 
 method create_page_node( $page_number ) {
-	my $page_group = Actor->new(
+	my $page_group = Group->new(
 		layout => Fixed->new
 	);
 
@@ -118,7 +120,7 @@ method create_page_node( $page_number ) {
 	);
 
 	$page_group->add_child(
-		Actor->new(
+		Graphics->new(
 			content => $pdf_page,
 		),
 		layout => {
