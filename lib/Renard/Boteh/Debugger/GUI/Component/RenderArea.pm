@@ -85,18 +85,20 @@ method BUILD(@) {
 }
 
 method _trigger_rendering() {
-	my $render_tree = $self->rendering->render_tree;
+	my $render_graph = $self->rendering->render_graph;
 
-	my $sz = $render_tree->attributes->{bounds}->size;
+	my $sz = $render_graph->graph->attributes->{bounds}->size;
 
 	$self->canvas->set_size( $sz->width, $sz->height );
 
 	$self->canvas->queue_draw;
+
+	#exit;
 }
 
 method render_cairo() {
-	my $render_tree = $self->rendering->render_tree;
-	my $sz = $render_tree->attributes->{bounds}->size;
+	my $render_graph = $self->rendering->render_graph;
+	my $sz = $render_graph->graph->attributes->{bounds}->size;
 
 	my $h = $self->scrolled_window->get_hadjustment;
 	my $v = $self->scrolled_window->get_vadjustment;
@@ -163,7 +165,7 @@ method render_cairo() {
 	};
 
 	$self->_walk_cairo_render(
-		$render_tree,
+		$render_graph->graph,
 		$cr,
 		$bounds,
 		$render_state,
@@ -195,7 +197,7 @@ Call back for the C<motion-notify-event> signal for the drawing area.
 
 =cut
 callback on_motion_notify_event_cb($widget, $event, $self) {
-	my $render_tree = $self->rendering->render_tree;
+	my $render_graph = $self->rendering->render_graph;
 
 	method _walk_motion_notify_event( $node, $event ) {
 		my @nodes = ();
@@ -215,7 +217,7 @@ callback on_motion_notify_event_cb($widget, $event, $self) {
 		return @nodes;
 	};
 
-	my @nodes = $self->_walk_motion_notify_event( $render_tree, $event );
+	my @nodes = $self->_walk_motion_notify_event( $render_graph->graph, $event );
 	$self->rendering->selection( \@nodes );
 
 	return TRUE;

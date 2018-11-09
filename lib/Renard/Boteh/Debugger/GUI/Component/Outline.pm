@@ -83,11 +83,11 @@ method _trigger_rendering() {
 
 	$data->clear;
 
-	my $tree = $self->rendering->render_tree;
+	my $render_graph = $self->rendering->render_graph;
 	my $iter = undef;
 	my @stack = ($iter);
 
-	$tree->walk_down({ callback => fun($node, $options) {
+	$render_graph->graph->walk_down({ callback => fun($node, $options) {
 		$options->{_depth} //= 0;
 		pop @{ $options->{stack} } while 1 + $options->{_depth} < scalar @{ $options->{stack} };
 		my $parent_iter = $options->{stack}[-1];
