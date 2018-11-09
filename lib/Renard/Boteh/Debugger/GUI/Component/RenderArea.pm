@@ -198,26 +198,7 @@ Call back for the C<motion-notify-event> signal for the drawing area.
 =cut
 callback on_motion_notify_event_cb($widget, $event, $self) {
 	my $render_graph = $self->rendering->render_graph;
-
-	method _walk_motion_notify_event( $node, $event ) {
-		my @nodes = ();
-		my @daughters = $node->daughters;
-		my $contains = $node->attributes->{bounds}->contains_point(
-			Renard::Yarn::Graphene::Point->new(
-				x => $event->x,
-				y => $event->y )
-		);
-		if( $contains ) {
-			push @nodes, $node;
-			for my $daughter (@daughters) {
-				push @nodes, $self->_walk_motion_notify_event( $daughter, $event );
-			}
-		}
-
-		return @nodes;
-	};
-
-	my @nodes = $self->_walk_motion_notify_event( $render_graph->graph, $event );
+	my @nodes = $render_graph->hit_test_nodes( [ 0 + $event->x, 0 + $event->y ] );
 	$self->rendering->selection( \@nodes );
 
 	return TRUE;
