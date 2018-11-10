@@ -93,7 +93,7 @@ method _trigger_rendering() {
 
 	$self->canvas->queue_draw;
 
-	#exit;
+	#Glib::Timeout->add(2000, sub { exit; });
 }
 
 method render_cairo() {
