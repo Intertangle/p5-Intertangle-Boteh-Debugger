@@ -15,6 +15,7 @@ use aliased 'Renard::Jacquard::Layout::All';
 use aliased 'Renard::Jacquard::Layout::Affine2D';
 use aliased 'Renard::Jacquard::Layout::AutofillGrid';
 use aliased 'Renard::Jacquard::Layout::Composed';
+use Renard::Jacquard::Graph::Taffeta;
 
 package Jacquard::Content::PDFPage {
 	use Renard::Incunabula::Common::Setup;
@@ -77,7 +78,7 @@ lazy document => method() {
 	);
 };
 
-lazy tree => method() {
+lazy graph => method() {
 	my $top = Group->new(
 		layout => Affine2D->new( transform =>
 			Renard::Taffeta::Transform::Affine2D::Scaling
@@ -105,7 +106,9 @@ lazy tree => method() {
 
 	$root->add_child( $self->create_page_node($_) ) for 1..$last_page;
 
-	return $root;
+	return Renard::Jacquard::Graph::Taffeta->new(
+		graph => $root,
+	)
 	#return $top;
 };
 
