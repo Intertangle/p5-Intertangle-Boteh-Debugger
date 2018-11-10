@@ -97,22 +97,24 @@ method _trigger_rendering() {
 }
 
 method render_cairo() {
+	use Renard::Jacquard::View::Taffeta;
+	use Renard::Taffeta::Graphics::Rectangle;
+
 	my $render_graph = $self->rendering->render_graph;
 	my $sz = $render_graph->graph->attributes->{bounds}->size;
 
 	my $h = $self->scrolled_window->get_hadjustment;
 	my $v = $self->scrolled_window->get_vadjustment;
 
-	my $bounds = Renard::Yarn::Graphene::Rect->new(
-		origin => Renard::Yarn::Graphene::Point->new(
-			x => $h->get_value,
-			y => $v->get_value,
-		),
-		size => Renard::Yarn::Graphene::Size->new(
+	my $view = Renard::Jacquard::View::Taffeta->new(
+		viewport => Renard::Taffeta::Graphics::Rectangle->new(
+			origin => [ $h->get_value, $v->get_value ],
 			width => $h->get_page_size,
 			height => $v->get_page_size,
-		),
+		)
 	);
+	my $bounds = $view->viewport->identity_bounds;
+	use DDP; p $bounds;#DEBUG
 
 	my $surface = Cairo::ImageSurface->create(
 		'argb32',
@@ -122,56 +124,10 @@ method render_cairo() {
 
 	$self->cairo_surface( $surface );
 
-	use DDP; p $bounds;#DEBUG
-
 	my $cr = Cairo::Context->create( $self->cairo_surface );
 
-	use Renard::Taffeta::Transform::Affine2D::Translation;
+	$render_graph->render_to_cairo( $cr, $view );
 
-	my $render_state =
-		Renard::Jacquard::Render::State->new(
-			coordinate_system_transform =>
-				Renard::Taffeta::Transform::Affine2D::Translation->new(
-					translate => [ - $bounds->origin->x, - $bounds->origin->y ],
-				)
-		);
-
-	$cr->save;
-
-	method _walk_cairo_render( $node, $cr, $bounds, $render_state ) {
-		my @daughters = $node->daughters;
-
-		my $renderable = exists $node->attributes->{renderable};
-		my ($in_bounds, $res) = $bounds->intersection($node->attributes->{bounds});
-		if( $renderable && $in_bounds ) {
-			#use DDP; p $node->attributes->{scene_graph}->content->page_number;
-
-			my $state = $node->attributes->{state}->compose( $render_state );
-			#my $state = $node->attributes->{state};
-
-			my $el = $node->attributes->{scene_graph}->content->as_taffeta(
-				state => $state,
-			)->render_cairo( $cr );
-			#my $el = $node->attributes->{render}->render_cairo( $cr );
-		}
-		for my $daughter (@daughters) {
-			$self->_walk_cairo_render(
-				$daughter,
-				$cr,
-				$bounds,
-				$render_state,
-			);
-		}
-	};
-
-	$self->_walk_cairo_render(
-		$render_graph->graph,
-		$cr,
-		$bounds,
-		$render_state,
-	);
-
-	$cr->restore;
 }
 
 =callback on_draw_page_cb
