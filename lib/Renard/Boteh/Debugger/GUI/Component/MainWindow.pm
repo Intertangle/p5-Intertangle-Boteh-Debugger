@@ -83,14 +83,14 @@ method show_all() {
 	$self->_window->show_all;
 }
 
-=method load_tree
+=method load_graph
 
 Load a scene graph to render.
 
 =cut
-method load_tree( $tree ) {
+method load_graph( $graph ) {
 	my $rendering = Renard::Boteh::Debugger::GUI::Rendering->new(
-		tree => $tree
+		graph => $graph
 	);
 	$self->outline->rendering( $rendering );
 	$self->render_area->rendering( $rendering );

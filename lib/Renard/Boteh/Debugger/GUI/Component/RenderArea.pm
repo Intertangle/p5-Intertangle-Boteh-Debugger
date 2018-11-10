@@ -2,33 +2,52 @@ use Renard::Incunabula::Common::Setup;
 package Renard::Boteh::Debugger::GUI::Component::RenderArea;
 # ABSTRACT: A render area
 
-use Moo;
+use Mu;
 use Glib::Object::Subclass
 	'Gtk3::Bin';
 
+use Object::Util;
 use Cairo;
 use Renard::Incunabula::Common::Types qw(InstanceOf);
 use Glib qw(TRUE FALSE);
 
-=attr drawing_area
+=attr canvas
 
-A L<Gtk3::DrawingArea>.
+A L<Gtk3::Layout>.
 
 =cut
-has drawing_area => (
-	is => 'rw',
-	isa => InstanceOf['Gtk3::DrawingArea'],
-);
+lazy canvas => method() {
+	my $canvas = Gtk3::Layout->new();
+
+	$canvas->signal_connect( draw => callback(
+			(InstanceOf['Gtk3::Layout']) $widget,
+			(InstanceOf['Cairo::Context']) $cr) {
+		$self->on_draw_page_cb( $cr );
+
+		return TRUE;
+	}, $self);
+
+	$canvas->add_events([ qw/button-press-mask pointer-motion-mask/ ]);
+	$canvas->signal_connect( 'motion-notify-event' =>
+		\&on_motion_notify_event_cb, $self );
+
+	$canvas;
+}, isa => InstanceOf['Gtk3::Layout'];
 
 =attr scrolled_window
 
 A L<Gtk3::ScrolledWindow>.
 
 =cut
-has scrolled_window => (
-	is => 'rw',
-	isa => InstanceOf['Gtk3::ScrolledWindow'],
-);
+lazy scrolled_window => method() {
+	my $scrolled_window = Gtk3::ScrolledWindow->new();
+
+	$scrolled_window->set_hexpand(TRUE);
+	$scrolled_window->set_vexpand(TRUE);
+	$scrolled_window->set_policy( 'automatic', 'automatic');
+
+	$scrolled_window;
+}, isa => InstanceOf['Gtk3::ScrolledWindow'];
 
 =attr cairo_surface
 
@@ -46,28 +65,11 @@ Sets up the render area component.
 
 =cut
 method BUILD(@) {
-	my $drawing_area = Gtk3::DrawingArea->new();
-	$self->drawing_area( $drawing_area );
-	$drawing_area->signal_connect( draw => callback(
-			(InstanceOf['Gtk3::DrawingArea']) $widget,
-			(InstanceOf['Cairo::Context']) $cr) {
-		$self->on_draw_page_cb( $cr );
-
-		return TRUE;
-	}, $self);
-
-	$drawing_area->add_events([ qw/button-press-mask pointer-motion-mask/ ]);
-	$drawing_area->signal_connect( 'motion-notify-event' =>
-		\&on_motion_notify_event_cb, $self );
-	$drawing_area->add_events('scroll-mask');
-
-	my $scrolled_window = Gtk3::ScrolledWindow->new();
-	$scrolled_window->set_hexpand(TRUE);
-	$scrolled_window->set_vexpand(TRUE);
-
-	$scrolled_window->add($drawing_area);
-	$scrolled_window->set_policy( 'automatic', 'automatic');
-	$self->scrolled_window($scrolled_window);
+	$self->add(
+		$self->scrolled_window->$_tap(
+			add => $self->canvas
+		)
+	);
 
 	my @adjustments = (
 		$self->scrolled_window->get_hadjustment,
@@ -80,32 +82,52 @@ method BUILD(@) {
 		#$adjustment->signal_connect( 'value-changed' => $callback );
 		#$adjustment->signal_connect( 'changed' => $callback );
 	#}
-
-	$self->add( $scrolled_window );
 }
 
 method _trigger_rendering() {
-	my $render_tree = $self->rendering->render_tree;
+	my $render_graph = $self->rendering->render_graph;
 
-	my $sz = $render_tree->attributes->{bounds}->size;
-	my $surface = Cairo::ImageSurface->create('argb32', $sz->width, $sz->height);
+	my $sz = $render_graph->graph->attributes->{bounds}->size;
+
+	$self->canvas->set_size( $sz->width, $sz->height );
+
+	$self->canvas->queue_draw;
+
+	#Glib::Timeout->add(2000, sub { exit; });
+}
+
+method render_cairo() {
+	use Renard::Jacquard::View::Taffeta;
+	use Renard::Taffeta::Graphics::Rectangle;
+
+	my $render_graph = $self->rendering->render_graph;
+	my $sz = $render_graph->graph->attributes->{bounds}->size;
+
+	my $h = $self->scrolled_window->get_hadjustment;
+	my $v = $self->scrolled_window->get_vadjustment;
+
+	my $view = Renard::Jacquard::View::Taffeta->new(
+		viewport => Renard::Taffeta::Graphics::Rectangle->new(
+			origin => [ $h->get_value, $v->get_value ],
+			width => $h->get_page_size,
+			height => $v->get_page_size,
+		)
+	);
+	my $bounds = $view->viewport->identity_bounds;
+	use Module::Load; load 'DDP'; p $bounds;#DEBUG
+
+	my $surface = Cairo::ImageSurface->create(
+		'argb32',
+		$bounds->size->width, $bounds->size->height,
+		#$sz->width, $sz->height,
+	);
+
 	$self->cairo_surface( $surface );
 
-	my $cr = Cairo::Context->create( $surface );
+	my $cr = Cairo::Context->create( $self->cairo_surface );
 
-	method _walk_cairo_render( $node, $cr ) {
-		my @daughters = $node->daughters;
-		if( exists $node->attributes->{render} ) {
-			my $el = $node->attributes->{render}->render_cairo( $cr );
-		}
-		for my $daughter (@daughters) {
-			$self->_walk_cairo_render( $daughter, $cr );
-		}
-	};
+	$render_graph->render_to_cairo( $cr, $view );
 
-	$self->_walk_cairo_render( $render_tree, $cr );
-
-	$self->drawing_area->set_size_request( $sz->width, $sz->height );
 }
 
 =callback on_draw_page_cb
@@ -114,11 +136,13 @@ Callback for the C<draw> signal on the drawing area.
 
 =cut
 method on_draw_page_cb($cr) {
-	return unless $self->cairo_surface;
+	#return unless $self->cairo_surface;
 
+	$self->render_cairo;
 	$cr->set_source_surface($self->cairo_surface,
-		0,
-		0);
+		0, 0,
+		#$self->scrolled_window->get_hadjustment->get_value, $self->scrolled_window->get_vadjustment->get_value,
+	);
 
 	$cr->paint;
 }
@@ -129,27 +153,8 @@ Call back for the C<motion-notify-event> signal for the drawing area.
 
 =cut
 callback on_motion_notify_event_cb($widget, $event, $self) {
-	my $render_tree = $self->rendering->render_tree;
-
-	method _walk_motion_notify_event( $node, $event ) {
-		my @nodes = ();
-		my @daughters = $node->daughters;
-		my $contains = $node->attributes->{bounds}->contains_point(
-			Renard::Yarn::Graphene::Point->new(
-				x => $event->x,
-				y => $event->y )
-		);
-		if( $contains ) {
-			push @nodes, $node;
-			for my $daughter (@daughters) {
-				push @nodes, $self->_walk_motion_notify_event( $daughter, $event );
-			}
-		}
-
-		return @nodes;
-	};
-
-	my @nodes = $self->_walk_motion_notify_event( $render_tree, $event );
+	my $render_graph = $self->rendering->render_graph;
+	my @nodes = $render_graph->hit_test_nodes( [ 0 + $event->x, 0 + $event->y ] );
 	$self->rendering->selection( \@nodes );
 
 	return TRUE;

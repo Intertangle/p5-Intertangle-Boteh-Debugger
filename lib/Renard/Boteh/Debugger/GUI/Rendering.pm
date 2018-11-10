@@ -2,7 +2,6 @@ use Renard::Incunabula::Common::Setup;
 package Renard::Boteh::Debugger::GUI::Rendering;
 
 use Mu;
-use Renard::Jacquard::Render::GenerateTree;
 use Renard::Incunabula::Common::Types qw(InstanceOf ArrayRef);
 use Renard::Jacquard::Types qw(Actor);
 use Glib::Object::Subclass
@@ -19,26 +18,25 @@ Initialises the L<Glib::Object> superclass.
 =cut
 classmethod FOREIGNBUILDARGS(@) { () }
 
-=attr tree
+=attr graph
 
 The scene graph.
 
 =cut
-has tree => (
+has graph => (
 	is => 'ro',
-	isa => Actor,
+	isa => InstanceOf['Renard::Jacquard::Graph::Taffeta'],
 	required => 1,
 );
 
-=attr render_tree
+=attr render_graph
 
-The render tree
+The render graph.
 
 =cut
-lazy render_tree => method() {
-	my $tree = Renard::Jacquard::Render::GenerateTree->get_render_tree(
-				root => $self->tree );
-}, isa => InstanceOf['Tree::DAG_Node'];
+lazy render_graph => method() {
+	my $tree = $self->graph->to_render_graph;
+}, isa => InstanceOf['Renard::Jacquard::Graph::Render'];
 
 =attr selection
 

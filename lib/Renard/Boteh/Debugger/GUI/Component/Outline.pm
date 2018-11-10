@@ -6,6 +6,7 @@ use Mu;
 use Glib::Object::Subclass
 	'Gtk3::Bin';
 
+use Object::Util;
 use Glib 'TRUE', 'FALSE';
 use List::UtilsBy qw(nsort_by);
 
@@ -21,7 +22,44 @@ A C<Gtk3::TreeView> for the outline.
 
 =cut
 lazy tree_view => method() {
-	Gtk3::TreeView->new;
+	my $tree_view = Gtk3::TreeView->new;
+
+	$tree_view->insert_column(
+		Gtk3::TreeViewColumn->new_with_attributes(
+			'Address',
+			Gtk3::CellRendererText->new,
+			text => COLUMNS->{'ADDRESS'}{'index'},
+			'cell-background' => COLUMNS->{'BACKGROUND_COLOR'}{'index'},
+		),
+	0);
+
+	$tree_view->insert_column(
+		Gtk3::TreeViewColumn->new_with_attributes(
+			'Name',
+			Gtk3::CellRendererText->new,
+			text => COLUMNS->{'NAME'}{'index'},
+			'cell-background' => COLUMNS->{'BACKGROUND_COLOR'}{'index'},
+		),
+	1);
+
+	$tree_view->set( 'headers-visible', FALSE );
+	$tree_view->set_model( $self->tree_store );
+
+	$tree_view;
+};
+
+=attr scrolled_window
+
+A C<Gtk3::ScrolledWindow> for containing C<tree_view>.
+
+=cut
+lazy scrolled_window => method() {
+	my $scrolled_window = Gtk3::ScrolledWindow->new;
+	$scrolled_window->set_vexpand(TRUE);
+	$scrolled_window->set_hexpand(TRUE);
+	$scrolled_window->set_policy( 'automatic', 'automatic');
+
+	$scrolled_window;
 };
 
 =attr tree_store
@@ -45,11 +83,11 @@ method _trigger_rendering() {
 
 	$data->clear;
 
-	my $tree = $self->rendering->render_tree;
+	my $render_graph = $self->rendering->render_graph;
 	my $iter = undef;
 	my @stack = ($iter);
 
-	$tree->walk_down({ callback => fun($node, $options) {
+	$render_graph->graph->walk_down({ callback => fun($node, $options) {
 		$options->{_depth} //= 0;
 		pop @{ $options->{stack} } while 1 + $options->{_depth} < scalar @{ $options->{stack} };
 		my $parent_iter = $options->{stack}[-1];
@@ -102,35 +140,14 @@ Sets up the outline component.
 =cut
 method BUILD(@) {
 	my $frame = Gtk3::Frame->new('Outline');
-	my $scrolled_window = Gtk3::ScrolledWindow->new;
-	$scrolled_window->set_vexpand(TRUE);
-	$scrolled_window->set_hexpand(TRUE);
-	$scrolled_window->set_policy( 'automatic', 'automatic');
 
-	$self->tree_view->insert_column(
-		Gtk3::TreeViewColumn->new_with_attributes(
-			'Address',
-			Gtk3::CellRendererText->new,
-			text => COLUMNS->{'ADDRESS'}{'index'},
-			'cell-background' => COLUMNS->{'BACKGROUND_COLOR'}{'index'},
+	$self->add(
+		$frame->$_tap(
+			add => $self->scrolled_window->$_tap(
+				add => $self->tree_view,
+			),
 		),
-	0);
-	$self->tree_view->insert_column(
-		Gtk3::TreeViewColumn->new_with_attributes(
-			'Name',
-			Gtk3::CellRendererText->new,
-			text => COLUMNS->{'NAME'}{'index'},
-			'cell-background' => COLUMNS->{'BACKGROUND_COLOR'}{'index'},
-		),
-	1);
-
-	$self->tree_view->set( 'headers-visible', FALSE );
-
-	$self->tree_view->set_model( $self->tree_store );
-
-	$scrolled_window->add( $self->tree_view );
-	$frame->add( $scrolled_window );
-	$self->add( $frame );
+	);
 }
 
 with qw(
