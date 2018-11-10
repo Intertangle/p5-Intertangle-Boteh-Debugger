@@ -114,7 +114,7 @@ method render_cairo() {
 		)
 	);
 	my $bounds = $view->viewport->identity_bounds;
-	use DDP; p $bounds;#DEBUG
+	use Module::Load; load 'DDP'; p $bounds;#DEBUG
 
 	my $surface = Cairo::ImageSurface->create(
 		'argb32',
