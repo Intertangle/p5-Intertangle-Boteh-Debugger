@@ -87,7 +87,7 @@ method BUILD(@) {
 method _trigger_rendering() {
 	my $render_graph = $self->rendering->render_graph;
 
-	my $sz = $render_graph->graph->attributes->{bounds}->size;
+	my $sz = $render_graph->size;
 
 	$self->canvas->set_size( $sz->width, $sz->height );
 
@@ -101,7 +101,7 @@ method render_cairo() {
 	use Renard::Taffeta::Graphics::Rectangle;
 
 	my $render_graph = $self->rendering->render_graph;
-	my $sz = $render_graph->graph->attributes->{bounds}->size;
+	my $sz = $render_graph->size;
 
 	my $h = $self->scrolled_window->get_hadjustment;
 	my $v = $self->scrolled_window->get_vadjustment;
