@@ -4,7 +4,7 @@ package Renard::Boteh::Debugger::GUI::Component::MainWindow;
 
 use Mu;
 use Renard::Incunabula::Common::Types qw(InstanceOf);
-use Renard::Incunabula::API::Gtk3::Helper;
+use Renard::API::Gtk3::Helper;
 
 use Renard::Boteh::Debugger::GUI::Component::Outline;
 use Renard::Boteh::Debugger::GUI::Component::RenderArea;
@@ -98,8 +98,8 @@ method load_graph( $graph ) {
 }
 
 with qw(
-	Renard::Incunabula::API::Gtk3::Component::Role::FromBuilder
-	Renard::Incunabula::API::Gtk3::Component::Role::UIFileFromPackageName
+	Renard::API::Gtk3::Component::Role::FromBuilder
+	Renard::API::Gtk3::Component::Role::UIFileFromPackageName
 );
 
 1;

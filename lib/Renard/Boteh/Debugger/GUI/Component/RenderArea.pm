@@ -93,7 +93,9 @@ method _trigger_rendering() {
 
 	$self->canvas->queue_draw;
 
-	#Glib::Timeout->add(2000, sub { exit; });
+	if( $ENV{RENARD_BOTEH_DEBUGGER_EXIT} ) {
+		Glib::Timeout->add(2000, sub { exit; });
+	}
 }
 
 method render_cairo() {

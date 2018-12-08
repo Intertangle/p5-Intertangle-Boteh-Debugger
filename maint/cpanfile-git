@@ -1,8 +1,8 @@
 requires 'Renard::Incunabula',
 	git => 'https://github.com/project-renard/p5-Renard-Incunabula.git',
 	branch => 'master';
-requires 'Renard::Incunabula::API::Gtk3',
-	git => 'https://github.com/project-renard/p5-Renard-Incunabula-API-Gtk3.git',
+requires 'Renard::API::Gtk3',
+	git => 'https://github.com/project-renard/p5-Renard-API-Gtk3.git',
 	branch => 'master';
 requires 'Renard::Jacquard',
 	git => 'https://github.com/project-renard/p5-Renard-Jacquard.git',
