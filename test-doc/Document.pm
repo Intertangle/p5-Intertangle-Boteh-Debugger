@@ -3,8 +3,8 @@ package Document;
 # ABSTRACT: A test for Renard-Boteh
 
 use Mu;
-use Renard::Incunabula::Block::Format::PDF::Document;
-use Renard::Incunabula::Block::Format::PDF::Devel::TestHelper;
+use Renard::Block::Format::PDF::Document;
+use Renard::Block::Format::PDF::Devel::TestHelper;
 use POSIX qw(ceil);
 
 use aliased 'Renard::Jacquard::Actor';
@@ -68,12 +68,12 @@ package Jacquard::Content::PDFPage {
 use Renard::Taffeta::Transform::Affine2D::Scaling;
 
 lazy filename => method() {
-	Renard::Incunabula::Block::Format::PDF::Devel::TestHelper
+	Renard::Block::Format::PDF::Devel::TestHelper
 		->pdf_reference_document_path;
 };
 
 lazy document => method() {
-	Renard::Incunabula::Block::Format::PDF::Document->new(
+	Renard::Block::Format::PDF::Document->new(
 		filename => $self->filename,
 	);
 };
