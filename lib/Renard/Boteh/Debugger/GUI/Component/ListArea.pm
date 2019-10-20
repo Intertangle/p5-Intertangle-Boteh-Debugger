@@ -55,7 +55,7 @@ callback on_updated_selection_cb($rendering, $self) {
 		my $box = Gtk3::Box->new( 'horizontal', 0 );
 
 		load 'DDP';
-		my $str = Data::Printer::np($node->attributes, colored => 0 );
+		my $str = Data::Printer::np($node->attributes, colored => 0, class => { internals  => 0, }, );
 		$box->add( Gtk3::Label->new( $node->address . $str ) );
 
 		$row->add($box);
