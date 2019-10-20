@@ -68,7 +68,7 @@ package Jacquard::Content::PDFPage {
 use Renard::Taffeta::Transform::Affine2D::Scaling;
 
 lazy filename => method() {
-	Renard::Block::Format::PDF::Devel::TestHelper
+	$ARGV[0] // Renard::Block::Format::PDF::Devel::TestHelper
 		->pdf_reference_document_path;
 };
 
