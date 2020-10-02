@@ -1,16 +1,16 @@
 use Renard::Incunabula::Common::Setup;
-package Renard::Boteh::Debugger::GUI::Component::MainWindow;
+package Intertangle::Boteh::Debugger::GUI::Component::MainWindow;
 # ABSTRACT: A window
 
 use Mu;
 use Renard::Incunabula::Common::Types qw(InstanceOf);
-use Renard::API::Gtk3::Helper;
+use Intertangle::API::Gtk3::Helper;
 
-use Renard::Boteh::Debugger::GUI::Component::Outline;
-use Renard::Boteh::Debugger::GUI::Component::RenderArea;
-use Renard::Boteh::Debugger::GUI::Component::ListArea;
+use Intertangle::Boteh::Debugger::GUI::Component::Outline;
+use Intertangle::Boteh::Debugger::GUI::Component::RenderArea;
+use Intertangle::Boteh::Debugger::GUI::Component::ListArea;
 
-use Renard::Boteh::Debugger::GUI::Rendering;
+use Intertangle::Boteh::Debugger::GUI::Rendering;
 
 use Glib 'TRUE', 'FALSE';
 
@@ -20,29 +20,29 @@ lazy _window => method() { # :ReturnType(InstanceOf['Gtk3::Window'])
 
 =attr outline
 
-A L<Renard::Boteh::Debugger::GUI::Component::Outline>.
+A L<Intertangle::Boteh::Debugger::GUI::Component::Outline>.
 
 =cut
 lazy outline => method() {
-	Renard::Boteh::Debugger::GUI::Component::Outline->new;
+	Intertangle::Boteh::Debugger::GUI::Component::Outline->new;
 };
 
 =attr render_area
 
-A L<Renard::Boteh::Debugger::GUI::Component::RenderArea>.
+A L<Intertangle::Boteh::Debugger::GUI::Component::RenderArea>.
 
 =cut
 lazy render_area => method() {
-	Renard::Boteh::Debugger::GUI::Component::RenderArea->new;
+	Intertangle::Boteh::Debugger::GUI::Component::RenderArea->new;
 };
 
 =attr list_area
 
-A L<Renard::Boteh::Debugger::GUI::Component::ListArea>.
+A L<Intertangle::Boteh::Debugger::GUI::Component::ListArea>.
 
 =cut
 lazy list_area => method() {
-	Renard::Boteh::Debugger::GUI::Component::ListArea->new;
+	Intertangle::Boteh::Debugger::GUI::Component::ListArea->new;
 };
 
 =method BUILD
@@ -89,7 +89,7 @@ Load a scene graph to render.
 
 =cut
 method load_graph( $graph ) {
-	my $rendering = Renard::Boteh::Debugger::GUI::Rendering->new(
+	my $rendering = Intertangle::Boteh::Debugger::GUI::Rendering->new(
 		graph => $graph
 	);
 	$self->outline->rendering( $rendering );
@@ -98,8 +98,8 @@ method load_graph( $graph ) {
 }
 
 with qw(
-	Renard::API::Gtk3::Component::Role::FromBuilder
-	Renard::API::Gtk3::Component::Role::UIFileFromPackageName
+	Intertangle::API::Gtk3::Component::Role::FromBuilder
+	Intertangle::API::Gtk3::Component::Role::UIFileFromPackageName
 );
 
 1;

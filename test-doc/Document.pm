@@ -1,28 +1,28 @@
 use Renard::Incunabula::Common::Setup;
 package Document;
-# ABSTRACT: A test for Renard-Boteh
+# ABSTRACT: A test for Intertangle-Boteh
 
 use Mu;
 use Renard::Block::Format::PDF::Document;
 use Renard::Block::Format::PDF::Devel::TestHelper;
 use POSIX qw(ceil);
 
-use aliased 'Renard::Jacquard::Actor';
-use aliased 'Renard::Jacquard::Actor::Taffeta::Group';
-use aliased 'Renard::Jacquard::Actor::Taffeta::Graphics';
-use aliased 'Renard::Jacquard::Layout::Fixed';
-use aliased 'Renard::Jacquard::Layout::All';
-use aliased 'Renard::Jacquard::Layout::Affine2D';
-use aliased 'Renard::Jacquard::Layout::AutofillGrid';
-use aliased 'Renard::Jacquard::Layout::Composed';
-use Renard::Jacquard::Graph::Taffeta;
+use aliased 'Intertangle::Jacquard::Actor';
+use aliased 'Intertangle::Jacquard::Actor::Taffeta::Group';
+use aliased 'Intertangle::Jacquard::Actor::Taffeta::Graphics';
+use aliased 'Intertangle::Jacquard::Layout::Fixed';
+use aliased 'Intertangle::Jacquard::Layout::All';
+use aliased 'Intertangle::Jacquard::Layout::Affine2D';
+use aliased 'Intertangle::Jacquard::Layout::AutofillGrid';
+use aliased 'Intertangle::Jacquard::Layout::Composed';
+use Intertangle::Jacquard::Graph::Taffeta;
 
 package Jacquard::Content::PDFPage {
 	use Renard::Incunabula::Common::Setup;
-	use Renard::Yarn::Types qw(Rect);
-	use Renard::Jacquard::Types qw(State);
-	use Renard::Jacquard::Render::State;
-	use aliased 'Renard::Taffeta::Graphics::Image::PNG';
+	use Intertangle::Yarn::Types qw(Rect);
+	use Intertangle::Jacquard::Types qw(State);
+	use Intertangle::Jacquard::Render::State;
+	use aliased 'Intertangle::Taffeta::Graphics::Image::PNG';
 
 	use Mu;
 
@@ -39,11 +39,11 @@ package Jacquard::Content::PDFPage {
 		$self->rendered_page->png_data,
 	};
 
-	method bounds( $state = Renard::Jacquard::Render::State->new ) :ReturnType(Rect) {
+	method bounds( $state = Intertangle::Jacquard::Render::State->new ) :ReturnType(Rect) {
 		#require Carp::REPL; Carp::REPL->import('repl'); repl();#DEBUG
-		my $identity_bounds = Renard::Yarn::Graphene::Rect->new(
-			origin => Renard::Yarn::Graphene::Point->new(0, 0),
-			size   => Renard::Yarn::Graphene::Size->new(
+		my $identity_bounds = Intertangle::Yarn::Graphene::Rect->new(
+			origin => Intertangle::Yarn::Graphene::Point->new(0, 0),
+			size   => Intertangle::Yarn::Graphene::Size->new(
 				width => $self->rendered_page->width,
 				height => $self->rendered_page->height,
 			),
@@ -55,7 +55,7 @@ package Jacquard::Content::PDFPage {
 	}
 
 	method as_taffeta(
-		(State) :$state = Renard::Jacquard::Render::State->new,
+		(State) :$state = Intertangle::Jacquard::Render::State->new,
 		:$taffeta_args = {} ) {
 		PNG->new(
 			data => $self->data,
@@ -65,7 +65,7 @@ package Jacquard::Content::PDFPage {
 	}
 };
 
-use Renard::Taffeta::Transform::Affine2D::Scaling;
+use Intertangle::Taffeta::Transform::Affine2D::Scaling;
 
 lazy filename => method() {
 	$ARGV[0] // Renard::Block::Format::PDF::Devel::TestHelper
@@ -81,7 +81,7 @@ lazy document => method() {
 lazy graph => method() {
 	my $top = Group->new(
 		layout => Affine2D->new( transform =>
-			Renard::Taffeta::Transform::Affine2D::Scaling
+			Intertangle::Taffeta::Transform::Affine2D::Scaling
 				->new(
 					scale => [0.2, 0.2],
 				)
@@ -106,7 +106,7 @@ lazy graph => method() {
 
 	$root->add_child( $self->create_page_node($_) ) for 1..$last_page;
 
-	return Renard::Jacquard::Graph::Taffeta->new(
+	return Intertangle::Jacquard::Graph::Taffeta->new(
 		graph => $root,
 	)
 	#return $top;
@@ -136,6 +136,6 @@ method create_page_node( $page_number ) {
 
 }
 
-with qw(Renard::Boteh::Role::Sceneable);
+with qw(Intertangle::Boteh::Role::Sceneable);
 
 1;

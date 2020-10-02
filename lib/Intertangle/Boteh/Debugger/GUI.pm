@@ -1,18 +1,18 @@
 use Renard::Incunabula::Common::Setup;
-package Renard::Boteh::Debugger::GUI;
+package Intertangle::Boteh::Debugger::GUI;
 # ABSTRACT: A graphical debugger for a Jacquard scene graph
 
 use Mu;
 
-use Renard::Boteh::Debugger::GUI::Component::MainWindow;
+use Intertangle::Boteh::Debugger::GUI::Component::MainWindow;
 
 =attr main_window
 
-The main window L<Renard::Boteh::Debugger::GUI::Component::MainWindow> for the debugger.
+The main window L<Intertangle::Boteh::Debugger::GUI::Component::MainWindow> for the debugger.
 
 =cut
 lazy main_window => method() {
-	Renard::Boteh::Debugger::GUI::Component::MainWindow->new;
+	Intertangle::Boteh::Debugger::GUI::Component::MainWindow->new;
 };
 
 =method process_arguments

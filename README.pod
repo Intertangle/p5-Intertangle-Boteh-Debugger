@@ -4,7 +4,7 @@
 
 =head1 NAME
 
-Renard::Boteh::Debugger - A debugger for Boteh motifs
+Intertangle::Boteh::Debugger - A debugger for Boteh motifs
 
 =head1 VERSION
 
@@ -12,15 +12,13 @@ version 0.001
 
 =head1 SEE ALSO
 
-L<Repository information|http://project-renard.github.io/doc/development/repo/p5-Renard-Boteh-Debugger/>
-
 =head1 AUTHOR
 
-Project Renard
+Zakariyya Mughal <zmughal@cpan.org>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2018 by Project Renard.
+This software is copyright (c) 2018 by Zakariyya Mughal.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.

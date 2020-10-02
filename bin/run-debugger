@@ -7,7 +7,7 @@ use Modern::Perl;
 use FindBin;
 use lib "$FindBin::Bin/../lib";
 
-use Renard::Boteh::Debugger::GUI;
+use Intertangle::Boteh::Debugger::GUI;
 use Module::Load;
 
 my $class = shift @ARGV;
@@ -17,6 +17,6 @@ die "Need to pass in class to instantiate" unless $class;
 load $class;
 
 my $graph = $class->new->graph;
-my $gui = Renard::Boteh::Debugger::GUI->new;
+my $gui = Intertangle::Boteh::Debugger::GUI->new;
 $gui->main_window->load_graph( $graph );
 $gui->run;

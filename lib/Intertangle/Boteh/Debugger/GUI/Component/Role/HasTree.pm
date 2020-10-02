@@ -1,5 +1,5 @@
 use Renard::Incunabula::Common::Setup;
-package Renard::Boteh::Debugger::GUI::Component::Role::HasTree;
+package Intertangle::Boteh::Debugger::GUI::Component::Role::HasTree;
 # ABSTRACT: A role for tree
 
 use Moo::Role;

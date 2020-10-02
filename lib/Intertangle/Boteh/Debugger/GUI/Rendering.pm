@@ -1,9 +1,9 @@
 use Renard::Incunabula::Common::Setup;
-package Renard::Boteh::Debugger::GUI::Rendering;
+package Intertangle::Boteh::Debugger::GUI::Rendering;
 
 use Mu;
 use Renard::Incunabula::Common::Types qw(InstanceOf ArrayRef);
-use Renard::Jacquard::Types qw(Actor);
+use Intertangle::Jacquard::Types qw(Actor);
 use Glib::Object::Subclass
 	'Glib::Object',
 	signals => {
@@ -25,7 +25,7 @@ The scene graph.
 =cut
 has graph => (
 	is => 'ro',
-	isa => InstanceOf['Renard::Jacquard::Graph::Taffeta'],
+	isa => InstanceOf['Intertangle::Jacquard::Graph::Taffeta'],
 	required => 1,
 );
 
@@ -36,7 +36,7 @@ The render graph.
 =cut
 lazy render_graph => method() {
 	my $tree = $self->graph->to_render_graph;
-}, isa => InstanceOf['Renard::Jacquard::Graph::Render'];
+}, isa => InstanceOf['Intertangle::Jacquard::Graph::Render'];
 
 =attr selection
 

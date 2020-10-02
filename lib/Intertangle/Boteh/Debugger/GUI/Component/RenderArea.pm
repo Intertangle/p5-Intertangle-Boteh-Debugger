@@ -1,5 +1,5 @@
 use Renard::Incunabula::Common::Setup;
-package Renard::Boteh::Debugger::GUI::Component::RenderArea;
+package Intertangle::Boteh::Debugger::GUI::Component::RenderArea;
 # ABSTRACT: A render area
 
 use Mu;
@@ -99,8 +99,8 @@ method _trigger_rendering() {
 }
 
 method render_cairo() {
-	use Renard::Jacquard::View::Taffeta;
-	use Renard::Taffeta::Graphics::Rectangle;
+	use Intertangle::Jacquard::View::Taffeta;
+	use Intertangle::Taffeta::Graphics::Rectangle;
 
 	my $render_graph = $self->rendering->render_graph;
 	my $sz = $render_graph->size;
@@ -108,8 +108,8 @@ method render_cairo() {
 	my $h = $self->scrolled_window->get_hadjustment;
 	my $v = $self->scrolled_window->get_vadjustment;
 
-	my $view = Renard::Jacquard::View::Taffeta->new(
-		viewport => Renard::Taffeta::Graphics::Rectangle->new(
+	my $view = Intertangle::Jacquard::View::Taffeta->new(
+		viewport => Intertangle::Taffeta::Graphics::Rectangle->new(
 			origin => [ $h->get_value, $v->get_value ],
 			width => $h->get_page_size,
 			height => $v->get_page_size,
@@ -163,7 +163,7 @@ callback on_motion_notify_event_cb($widget, $event, $self) {
 }
 
 with qw(
-	Renard::Boteh::Debugger::GUI::Component::Role::HasTree
+	Intertangle::Boteh::Debugger::GUI::Component::Role::HasTree
 );
 
 

@@ -1,5 +1,5 @@
 use Renard::Incunabula::Common::Setup;
-package Renard::Boteh::Debugger::GUI::Component::Outline;
+package Intertangle::Boteh::Debugger::GUI::Component::Outline;
 # ABSTRACT: An outline
 
 use Mu;
@@ -151,7 +151,7 @@ method BUILD(@) {
 }
 
 with qw(
-	Renard::Boteh::Debugger::GUI::Component::Role::HasTree
+	Intertangle::Boteh::Debugger::GUI::Component::Role::HasTree
 );
 
 1;

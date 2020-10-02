@@ -1,5 +1,5 @@
 use Renard::Incunabula::Common::Setup;
-package Renard::Boteh::Debugger::GUI::Component::ListArea;
+package Intertangle::Boteh::Debugger::GUI::Component::ListArea;
 # ABSTRACT: A list area
 
 use Mu;
@@ -66,7 +66,7 @@ callback on_updated_selection_cb($rendering, $self) {
 }
 
 with qw(
-	Renard::Boteh::Debugger::GUI::Component::Role::HasTree
+	Intertangle::Boteh::Debugger::GUI::Component::Role::HasTree
 );
 
 1;
